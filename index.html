@@ -1063,6 +1063,24 @@ window.addEventListener("keydown",(e)=>{
 
 initDecks();
 resetAll();
+  // ✅ 给岔路卡片绑定点击（手机可用）
+(function bindBranchClicks(){
+  const opts = document.querySelectorAll("#overlay .choices .opt");
+  if (!opts || opts.length < 3) return;
+
+  // 让它看起来也“可点”
+  opts.forEach(o => { o.style.cursor = "pointer"; o.style.userSelect = "none"; });
+
+  // 点击 A/B/C
+  opts[0].addEventListener("click", ()=>chooseBranch("A"), {passive:true});
+  opts[1].addEventListener("click", ()=>chooseBranch("B"), {passive:true});
+  opts[2].addEventListener("click", ()=>chooseBranch("C"), {passive:true});
+
+  // 也支持 touchend（更稳）
+  opts[0].addEventListener("touchend", ()=>chooseBranch("A"), {passive:true});
+  opts[1].addEventListener("touchend", ()=>chooseBranch("B"), {passive:true});
+  opts[2].addEventListener("touchend", ()=>chooseBranch("C"), {passive:true});
+})();
 </script>
 </body>
 </html>
