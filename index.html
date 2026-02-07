@@ -7,14 +7,21 @@
 
   <style>
     :root{
-      --bg0:#070a14; --bg1:#0b1020;
+      --bg0:#070a14;
+      --bg1:#0b1020;
       --txt:#eef0ff;
       --mut:rgba(238,240,255,.72);
       --mut2:rgba(238,240,255,.55);
-      --shadow: 0 22px 78px rgba(0,0,0,.52);
-      --shadow2: 0 10px 34px rgba(0,0,0,.35);
-      --radius: 20px;
+      --glass: rgba(255,255,255,.06);
+      --stroke: rgba(255,255,255,.14);
+      --good:#6be7a8;
+      --warn:#ffd36b;
+      --bad:#ff6b8a;
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --shadow2: 0 10px 26px rgba(0,0,0,.35);
+      --radius: 22px;
     }
+
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
@@ -24,302 +31,227 @@
       overflow:hidden;
       background:
         radial-gradient(900px 700px at 18% 12%, rgba(96, 122, 255, .33) 0%, rgba(12, 18, 44, 0) 56%),
-        radial-gradient(800px 600px at 78% 22%, rgba(255, 211, 107, .16) 0%, rgba(12, 18, 44, 0) 62%),
-        radial-gradient(900px 700px at 50% 100%, rgba(107, 231, 168, .10) 0%, rgba(12, 18, 44, 0) 62%),
+        radial-gradient(760px 520px at 78% 22%, rgba(255, 211, 107, .16) 0%, rgba(12, 18, 44, 0) 62%),
+        radial-gradient(920px 620px at 50% 100%, rgba(107, 231, 168, .10) 0%, rgba(12, 18, 44, 0) 62%),
         linear-gradient(180deg, var(--bg0) 0%, var(--bg1) 60%, #060812 100%);
     }
 
-    /* 雪花 */
+    /* 雪花（纯CSS） */
     .snow, .snow:before, .snow:after{
       position:fixed; inset:-200px 0 0 0; content:"";
       pointer-events:none;
       background-image:
-        radial-gradient(2px 2px at 10% 10%, rgba(255,255,255,.55) 40%, rgba(255,255,255,0) 42%),
-        radial-gradient(1px 1px at 40% 30%, rgba(255,255,255,.50) 45%, rgba(255,255,255,0) 47%),
-        radial-gradient(2px 2px at 70% 20%, rgba(255,255,255,.45) 40%, rgba(255,255,255,0) 42%),
-        radial-gradient(1px 1px at 90% 60%, rgba(255,255,255,.40) 45%, rgba(255,255,255,0) 47%),
-        radial-gradient(2px 2px at 25% 80%, rgba(255,255,255,.36) 40%, rgba(255,255,255,0) 42%),
-        radial-gradient(1px 1px at 55% 75%, rgba(255,255,255,.44) 45%, rgba(255,255,255,0) 47%),
-        radial-gradient(2px 2px at 80% 88%, rgba(255,255,255,.34) 40%, rgba(255,255,255,0) 42%);
-      background-size: 520px 520px;
+        radial-gradient(2px 2px at 10% 10%, rgba(255,255,255,.60) 40%, rgba(255,255,255,0) 42%),
+        radial-gradient(1px 1px at 40% 30%, rgba(255,255,255,.55) 45%, rgba(255,255,255,0) 47%),
+        radial-gradient(2px 2px at 70% 20%, rgba(255,255,255,.50) 40%, rgba(255,255,255,0) 42%),
+        radial-gradient(1px 1px at 90% 60%, rgba(255,255,255,.45) 45%, rgba(255,255,255,0) 47%),
+        radial-gradient(2px 2px at 25% 80%, rgba(255,255,255,.40) 40%, rgba(255,255,255,0) 42%),
+        radial-gradient(1px 1px at 55% 75%, rgba(255,255,255,.48) 45%, rgba(255,255,255,0) 47%),
+        radial-gradient(2px 2px at 80% 88%, rgba(255,255,255,.38) 40%, rgba(255,255,255,0) 42%);
+      background-size: 460px 460px;
       opacity:.22;
       filter: blur(.2px);
-      animation: snowFall 22s linear infinite;
+      animation: snowFall 20s linear infinite;
     }
-    .snow:before{opacity:.14; background-size: 720px 720px; animation-duration: 30s; transform: translateY(-140px);}
-    .snow:after{opacity:.10; background-size: 900px 900px; animation-duration: 38s; transform: translateY(-240px); filter: blur(.6px);}
+    .snow:before{
+      opacity:.14; background-size: 640px 640px;
+      animation-duration: 28s; transform: translateY(-140px);
+    }
+    .snow:after{
+      opacity:.10; background-size: 820px 820px;
+      animation-duration: 36s; transform: translateY(-240px);
+      filter: blur(.6px);
+    }
     @keyframes snowFall{0%{transform: translateY(-260px)}100%{transform: translateY(980px)}}
 
-    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
-    .wrap{min-height:100vh; display:flex; flex-direction:column;}
-
-    /* 顶栏（去掉所有按键说明） */
-    .top{
-      padding:14px 14px 12px;
-      display:flex; align-items:flex-end; justify-content:space-between; gap:10px; flex-wrap:wrap;
-      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
-      border-bottom: 1px solid rgba(255,255,255,.10);
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-      box-shadow: 0 8px 28px rgba(0,0,0,.30);
-    }
-    .title{
-      font-size:18px; font-weight:1000; letter-spacing:.4px;
-      display:flex; align-items:center; gap:10px;
-    }
-    .title:before{
-      content:""; width:10px; height:10px; border-radius:999px;
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.95), rgba(255,211,107,.50), rgba(107,231,168,.20));
-      box-shadow: 0 0 18px rgba(255,211,107,.35);
-    }
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px; border-radius:999px; font-size:12px; color:rgba(238,240,255,.85);
-      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
-      border: 1px solid rgba(255,255,255,.14);
-      box-shadow: 0 10px 26px rgba(0,0,0,.28);
-    }
-    .pill b{color:var(--txt)}
-    .pill .dim{color:rgba(238,240,255,.65)}
-
-    /* 舞台 */
-    .main{flex:1; display:flex; align-items:center; justify-content:center; padding:12px 12px 92px;}
+    .wrap{height:100%; display:flex; flex-direction:column; padding:14px;}
     .stage{
-      width: min(980px, 96vw);
+      flex:1;
       border-radius: calc(var(--radius) + 10px);
-      padding:14px;
+      padding:16px;
       background: linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.03));
       border:1px solid rgba(255,255,255,.10);
       box-shadow: var(--shadow);
-      position:relative; overflow:hidden;
+      position:relative;
+      overflow:hidden;
     }
     .stage:before{
       content:""; position:absolute; inset:-2px;
       border-radius: calc(var(--radius) + 12px);
       background:
-        radial-gradient(680px 240px at 18% 0%, rgba(255,211,107,.16), rgba(0,0,0,0) 60%),
-        radial-gradient(680px 240px at 82% 0%, rgba(96,122,255,.18), rgba(0,0,0,0) 60%),
-        radial-gradient(680px 240px at 50% 120%, rgba(107,231,168,.10), rgba(0,0,0,0) 60%);
-      pointer-events:none; opacity:.9; filter: blur(.2px);
-    }
-    .row{
-      position:relative;
-      border-radius: var(--radius);
-      padding:14px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.05);
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-      box-shadow: var(--shadow2);
-      margin-bottom:12px;
+        radial-gradient(820px 260px at 18% 0%, rgba(255,211,107,.16), rgba(0,0,0,0) 60%),
+        radial-gradient(820px 260px at 82% 0%, rgba(96,122,255,.18), rgba(0,0,0,0) 60%),
+        radial-gradient(820px 260px at 50% 120%, rgba(107,231,168,.10), rgba(0,0,0,0) 60%);
+      pointer-events:none; opacity:.88; filter: blur(.2px);
     }
 
-    /* 舞台级字幕（手机更大更清晰） */
+    .card{
+      position:relative;
+      border-radius: var(--radius);
+      padding:16px 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: var(--shadow2);
+    }
+
     #cardTitle{
-      font-size: clamp(26px, 6.2vw, 38px);
+      font-size: clamp(30px, 6.2vw, 44px);
       font-weight: 1150;
-      letter-spacing: .5px;
+      letter-spacing: .6px;
       line-height:1.12;
     }
     #cardBody{
-      margin-top:10px;
-      font-size: clamp(16px, 4.8vw, 22px);
+      margin-top:12px;
+      font-size: clamp(18px, 4.4vw, 26px);
       color: rgba(238,240,255,.94);
-      line-height:1.55;
+      line-height:1.6;
       white-space: pre-line;
     }
 
-    /* 主线/许愿（不展示按键提示） */
-    .metaLine{
-      margin-top:10px;
-      display:flex; gap:8px; flex-wrap:wrap;
+    /* 能量条 */
+    .energyWrap{
+      margin-top:14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .energyLabel{
+      font-size:13px;
       color: var(--mut);
-      font-size:12px;
     }
-    .metaTag{
-      padding:6px 9px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
-      color: rgba(238,240,255,.88);
-    }
-    .metaTag b{color:rgba(238,240,255,.96)}
-
-    /* 最近3条 */
-    .kpi{
-      border-radius: var(--radius);
-      padding:12px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-      box-shadow: var(--shadow2);
-      display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;
-    }
-    .chip{
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
+    .bar{
+      flex:1;
+      min-width: 160px;
+      height: 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
       background: rgba(255,255,255,.05);
-      font-size:12px;
-      color: rgba(238,240,255,.90);
-      white-space:nowrap;
-      max-width: 86vw;
       overflow:hidden;
-      text-overflow: ellipsis;
+      box-shadow: 0 8px 18px rgba(0,0,0,.28);
     }
-    .chip.m{color:var(--mut2); background: rgba(255,255,255,.03);}
-
-    /* Toast（不含任何按键说明） */
-    .toast{
-      position:fixed; left:50%; top:10%;
-      transform: translateX(-50%) scale(.98);
-      min-width: min(940px, 96vw);
-      padding:16px;
-      border-radius: 22px;
-      border: 1px solid rgba(255,255,255,.16);
-      background: rgba(10,14,34,.82);
-      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-      box-shadow: var(--shadow);
-      z-index:9999;
-      opacity:0;
-      pointer-events:none;
-      white-space:pre-line;
+    .fill{
+      height:100%;
+      width:0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(255,211,107,.55), rgba(96,122,255,.45), rgba(107,231,168,.35));
+      transition: width .18s ease;
     }
-    .toast.show{animation: pop 2.9s ease forwards;}
-    @keyframes pop{
-      0%{opacity:0; transform:translateX(-50%) translateY(-10px) scale(.96);}
-      12%{opacity:1; transform:translateX(-50%) translateY(0px) scale(1);}
-      82%{opacity:1; transform:translateX(-50%) translateY(0px) scale(1);}
-      100%{opacity:0; transform:translateX(-50%) translateY(-10px) scale(.98);}
-    }
-    .toast .t1{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;}
-    .toast .tt{font-size:16px; font-weight:1100;}
-    .badge{
-      display:inline-flex; align-items:center;
-      padding:6px 10px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.16);
-      background: rgba(255,255,255,.06);
-      color: rgba(238,240,255,.85);
-      font-size:12px;
+    .energyText{
+      font-size:13px;
+      color: rgba(238,240,255,.86);
       white-space:nowrap;
     }
-    .badge.good{border-color: rgba(107,231,168,.35); background: rgba(107,231,168,.12);}
-    .badge.warn{border-color: rgba(255,211,107,.35); background: rgba(255,211,107,.12);}
-    .badge.bad{border-color: rgba(255,107,138,.35); background: rgba(255,107,138,.12);}
-    .toast .msg{margin-top:10px; font-size:15px; color: rgba(238,240,255,.94); line-height:1.55;}
 
-    /* 岔路 overlay */
-    .overlay{
-      position:fixed; inset:0;
-      background: rgba(0,0,0,.60);
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      display:none; align-items:center; justify-content:center;
-      z-index:9998;
-      padding:14px;
-    }
-    .overlay.show{display:flex;}
-    .choiceBox{
-      width:min(980px, 96vw);
-      border-radius: 26px;
-      border: 1px solid rgba(255,255,255,.18);
-      background: rgba(10,14,34,.88);
-      box-shadow: var(--shadow);
-      padding:16px;
-      position:relative; overflow:hidden;
-    }
-    .choiceTop{display:flex; align-items:flex-end; justify-content:space-between; gap:10px; flex-wrap:wrap;}
-    .choiceTop .cTitle{font-size:18px; font-weight:1150;}
-    .choices{margin-top:14px; display:grid; grid-template-columns: 1fr; gap:10px;}
-    .opt{
-      padding:14px;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      box-shadow: 0 10px 24px rgba(0,0,0,.25);
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      cursor:pointer;
-      user-select:none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .opt .letter{
-      font-size:34px; font-weight:1200; letter-spacing:1px;
-      text-shadow: 0 10px 24px rgba(0,0,0,.35);
-    }
-    .opt .sub{font-size:12px; color:var(--mut);}
-
-    /* 站台灯全屏大字 */
-    .lamp{
-      position:fixed; inset:0;
-      display:none;
-      align-items:center; justify-content:center;
-      z-index:10000;
-      background:
-        radial-gradient(900px 500px at 50% 35%, rgba(255,211,107,.26) 0%, rgba(0,0,0,0) 60%),
-        rgba(0,0,0,.60);
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      padding:14px;
-    }
-    .lamp.show{display:flex; animation: lampPop 1.65s ease forwards;}
-    @keyframes lampPop{
-      0%{opacity:0; transform: scale(.98)}
-      12%{opacity:1; transform: scale(1)}
-      78%{opacity:1; transform: scale(1)}
-      100%{opacity:0; transform: scale(.99)}
-    }
-    .lampCard{
-      width:min(980px, 96vw);
-      border-radius: 26px;
-      border:1px solid rgba(255,255,255,.20);
-      background: rgba(10,14,34,.90);
-      box-shadow: var(--shadow);
-      padding:18px;
-      position:relative;
-      overflow:hidden;
-    }
-    .lampTitle{
-      font-size: clamp(34px, 9vw, 52px);
-      font-weight: 1250;
-      letter-spacing: .8px;
-      line-height: 1.05;
-      text-shadow: 0 18px 50px rgba(0,0,0,.55);
-    }
-    .lampSub{
-      margin-top:10px;
-      font-size: clamp(16px, 4.8vw, 22px);
-      color: rgba(238,240,255,.94);
-      line-height:1.5;
-      white-space:pre-line;
-    }
-
-    /* 底部控制条（手机版主操控） */
-    .controls{
-      position:fixed;
-      left:0; right:0; bottom:0;
-      padding:10px 10px calc(10px + env(safe-area-inset-bottom));
-      background: rgba(10,14,34,.78);
-      border-top: 1px solid rgba(255,255,255,.10);
-      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-      box-shadow: 0 -14px 40px rgba(0,0,0,.45);
-      z-index:9996;
-    }
-    .btnGrid{
+    /* 底部按钮区 */
+    .panel{
+      margin-top:12px;
       display:grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap:10px;
+      position:relative;
+      z-index:5;
     }
-    .btn{
+    .panel2{
+      margin-top:10px;
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:10px;
+      position:relative;
+      z-index:5;
+    }
+    button{
       border:1px solid rgba(255,255,255,.16);
       background: rgba(255,255,255,.07);
       color: var(--txt);
       padding:14px 12px;
       border-radius: 16px;
       font-size:16px;
-      font-weight:900;
+      font-weight:800;
       cursor:pointer;
-      user-select:none;
+      transition: transform .06s ease, background .12s ease;
+      box-shadow: 0 10px 22px rgba(0,0,0,.28);
       -webkit-tap-highlight-color: transparent;
-      box-shadow: 0 10px 26px rgba(0,0,0,.28);
     }
-    .btn:active{transform: translateY(1px); background: rgba(255,255,255,.10);}
-    .btn.sub{font-size:14px; font-weight:850; color: rgba(238,240,255,.92);}
+    button:active{transform: scale(.985);}
+    button:hover{background: rgba(255,255,255,.10);}
+
+    .btnSoft{font-weight:750; font-size:15px; color: rgba(238,240,255,.92);}
+    .btnWarn{border-color: rgba(255,211,107,.35); background: rgba(255,211,107,.12);}
+    .btnGood{border-color: rgba(107,231,168,.35); background: rgba(107,231,168,.12);}
+
+    /* Toast */
+    .toast{
+      position:fixed; left:50%; top:8%;
+      transform: translateX(-50%) scale(.98);
+      width: min(680px, 92vw);
+      padding:16px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(10,14,34,.82);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+      z-index:9999;
+      opacity:0;
+      pointer-events:none;
+      white-space:pre-line;
+    }
+    .toast.show{animation: pop 2.8s ease forwards;}
+    @keyframes pop{
+      0%{opacity:0; transform:translateX(-50%) translateY(-10px) scale(.96);}
+      12%{opacity:1; transform:translateX(-50%) translateY(0px) scale(1);}
+      82%{opacity:1; transform:translateX(-50%) translateY(0px) scale(1);}
+      100%{opacity:0; transform:translateX(-50%) translateY(-10px) scale(.98);}
+    }
+    .toastTitle{font-size:18px; font-weight:1000;}
+    .toastMsg{margin-top:10px; font-size:16px; line-height:1.55; color: rgba(238,240,255,.94);}
+
+    /* 站台灯全屏提示 */
+    .lamp{
+      position:fixed; inset:0;
+      display:none;
+      align-items:center; justify-content:center;
+      z-index:10000;
+      background:
+        radial-gradient(900px 520px at 50% 35%, rgba(255,211,107,.26) 0%, rgba(0,0,0,0) 60%),
+        rgba(0,0,0,.58);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .lamp.show{display:flex; animation: lampPop 1.55s ease forwards;}
+    @keyframes lampPop{
+      0%{opacity:0; transform: scale(.985)}
+      12%{opacity:1; transform: scale(1)}
+      78%{opacity:1; transform: scale(1)}
+      100%{opacity:0; transform: scale(.99)}
+    }
+    .lampCard{
+      width:min(680px, 92vw);
+      border-radius: 28px;
+      border:1px solid rgba(255,255,255,.20);
+      background: rgba(10,14,34,.86);
+      box-shadow: var(--shadow);
+      padding:20px;
+      position:relative;
+      overflow:hidden;
+    }
+    .lampTitle{
+      font-size: clamp(34px, 7vw, 52px);
+      font-weight: 1250;
+      letter-spacing: 1px;
+      line-height: 1.05;
+    }
+    .lampSub{
+      margin-top:12px;
+      font-size: clamp(18px, 4.6vw, 26px);
+      color: rgba(238,240,255,.94);
+      line-height:1.55;
+      white-space:pre-line;
+    }
   </style>
 </head>
 
@@ -327,63 +259,48 @@
   <div class="snow" aria-hidden="true"></div>
 
   <div class="wrap">
-    <div class="top">
-      <div class="title">2026冬日列车</div>
-      <div class="pill"><b>待结算</b>：<span id="pendingType" class="dim">未选择</span></div>
-    </div>
+    <div class="stage">
+      <div class="card">
+        <div id="cardTitle">结果卡</div>
+        <div id="cardBody">准备开拆。</div>
 
-    <div class="main">
-      <div class="stage">
-        <div class="row">
-          <div class="metaLine">
-            <span class="metaTag"><b id="actTag">幕一 · 起程</b></span>
-            <span class="metaTag">许愿：<b id="wishTag">未写入</b></span>
-          </div>
+        <div class="energyWrap">
+          <div class="energyLabel">站台灯能量</div>
+          <div class="bar"><div class="fill" id="fill"></div></div>
+          <div class="energyText" id="energyText">0 / 3</div>
         </div>
+      </div>
 
-        <div class="row">
-          <div>
-            <div id="cardTitle">结果卡：等待结算</div>
-            <div id="cardBody">点击「普通」或「隐藏」即可直接结算。</div>
-          </div>
-        </div>
+      <!-- 结算：普通/隐藏（点了直接结算） -->
+      <div class="panel" style="margin-top:14px;">
+        <button class="btnGood" id="btnCommon">普通</button>
+        <button class="btnWarn" id="btnHidden">隐藏</button>
+        <button class="btnSoft" id="btnWish">许愿</button>
+      </div>
 
-        <div class="kpi">
-          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-            <div class="chip m">最近3条：</div>
-            <div class="chip" id="t1">-</div>
-            <div class="chip" id="t2">-</div>
-            <div class="chip" id="t3">-</div>
-          </div>
-        </div>
+      <!-- 每轮岔路：A/B/C（每轮都可以点） -->
+      <div class="panel2">
+        <button class="btnSoft" id="btnA">A</button>
+        <button class="btnSoft" id="btnB">B</button>
+        <button class="btnSoft" id="btnC">C</button>
+      </div>
+
+      <!-- 补给：强制下一轮加拆（不向观众解释机制） -->
+      <div class="panel2">
+        <button class="btnSoft" id="btnSupply">补给</button>
+        <button class="btnSoft" id="btnReset">重置</button>
+        <button class="btnSoft" id="btnBlank" disabled style="opacity:.45;"> </button>
       </div>
     </div>
   </div>
 
   <!-- Toast -->
   <div class="toast" id="toast">
-    <div class="t1">
-      <div class="tt" id="toastTitle">提示</div>
-      <div class="badge warn" id="toastBadge">事件</div>
-    </div>
-    <div class="msg" id="toastMsg">内容</div>
+    <div class="toastTitle" id="toastTitle">提示</div>
+    <div class="toastMsg" id="toastMsg">内容</div>
   </div>
 
-  <!-- 岔路 -->
-  <div class="overlay" id="overlay">
-    <div class="choiceBox">
-      <div class="choiceTop">
-        <div class="cTitle" id="choiceTitle">岔路出现：请选择 A / B / C</div>
-      </div>
-      <div class="choices">
-        <div class="opt" id="optA"><div class="letter">A</div><div class="sub">点击选择</div></div>
-        <div class="opt" id="optB"><div class="letter">B</div><div class="sub">点击选择</div></div>
-        <div class="opt" id="optC"><div class="letter">C</div><div class="sub">点击选择</div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 站台灯大字 -->
+  <!-- 站台灯 -->
   <div class="lamp" id="lamp">
     <div class="lampCard">
       <div class="lampTitle" id="lampTitle">站台灯亮起</div>
@@ -391,22 +308,9 @@
     </div>
   </div>
 
-  <!-- 底部控制 -->
-  <div class="controls">
-    <div class="btnGrid">
-      <button class="btn" id="btnCommon">普通</button>
-      <button class="btn" id="btnHidden">隐藏</button>
-      <button class="btn" id="btnWish">许愿</button>
-
-      <button class="btn sub" id="btnSupply">补给</button>
-      <button class="btn sub" id="btnReset">重置</button>
-      <button class="btn sub" id="btnBlank" disabled style="opacity:.55;">&nbsp;</button>
-    </div>
-  </div>
-
 <script>
 /* =========================
-   配置（保持你原逻辑）
+   配置（按你库存）
 ========================= */
 const CFG = {
   common: 519,
@@ -414,25 +318,22 @@ const CFG = {
   scarf: 12,
   doll: 3,
 
-  branchEvery: 3,
+  // ✅ 隐藏触发：连续3单加拆（当前+后两单）
   hiddenAddStreak: 3,
 
-  cAddTotal: 30,
-  cUnlockPerB: 1,
+  // ✅ 随行回礼（手链）概率 = 33%
+  escortGiftRate: 0.33,
 
-  actStep: 30,
-  acts: [
-    { name: "幕一 · 起程", cue: "暖灯亮起，风铃响了——列车正式出发。" },
-    { name: "幕二 · 暴雪", cue: "窗外暴雪加剧——隐藏车厢与补给开始紧张。" },
-    { name: "幕三 · 回家", cue: "远处出现熟悉的灯火——我们正在靠近‘家’。" }
-  ],
+  // ✅ 能量条：满 3 触发站台灯回礼
+  energyMax: 3,
 
-  giftUnlockOrders: [15, 30, 45, 62, 80, 98, 120, 142, 166, 192, 220, 248, 278, 310, 345],
-  giftSequence: [
-    "围巾","围巾","玲娜贝尔",
-    "围巾","围巾","围巾","玲娜贝尔",
-    "围巾","围巾","围巾","玲娜贝尔",
-    "围巾","围巾","围巾","围巾"
+  // ✅ 站台灯回礼池权重（不承诺中奖，只是剧情推进）
+  // 手链优先，其次加拆，然后围巾/玲娜贝尔
+  lampWeights: [
+    { key:"bracelet", w:70 },
+    { key:"add",      w:20 },
+    { key:"scarf",    w:8  },
+    { key:"doll",     w:2  }
   ],
 
   finalAnnouncement:
@@ -441,66 +342,56 @@ const CFG = {
 如有疑问请联系客服为您检查`
 };
 
+/* =========================
+   文案池（精简：不再出现 / … / …）
+========================= */
 const TEXT = {
   base: [
     "列车广播轻响：雪夜在窗外慢慢铺开",
     "车厢灯带亮起：空气里多了一点暖",
-    "站台风铃一响：冬天的故事开始推进",
-    "玻璃起雾又散：像有人悄悄在守护"
+    "站台风铃一响：冬天的故事开始推进"
   ],
   hidden: [
     "隐藏车厢被点亮：霜面裂开一道光",
     "站牌翻面：出现一张隐藏车票",
-    "铃声轻响：隐藏纪念章落在掌心",
-    "车门合上又开：雪景短暂露面"
+    "铃声轻响：隐藏纪念章落在掌心"
   ],
   add: [
     "补给车厢接驳：随行礼已装载",
     "暖风机启动：多一份安心被递上",
-    "补给箱弹开：额外守护已到账",
-    "列车员点头：加挂一节暖车厢"
+    "补给箱弹开：额外守护已到账"
   ],
   branchA: [
     "岔路转向：车厢里响起轻快旋律",
-    "你按下按钮：仪表盘亮起温柔提示",
-    "车门一开一合：落下一张回礼卡",
-    "灯带变色：弹幕瞬间沸腾"
+    "车门一开一合：落下一张回礼卡"
   ],
   branchB: [
     "转轨成功：引擎低鸣、速度悄悄上来",
-    "列车加速：前方车厢出现新灯号",
-    "轨道切换：一段新剧情被点亮",
-    "提示音响：路线确认、故事推进"
+    "轨道切换：一段新剧情被点亮"
   ],
   branchC: [
     "补给信号闪烁：连接通道开启",
-    "接驳完成：后方多出一节小车厢",
-    "仪表盘闪了一下：补给已就位",
     "车厢尽头亮灯：补给车靠站"
-  ],
-  upgrade: [
-    "系统提示：补给已满载，回礼升级为纪念款",
-    "车厢提示：改为升级回礼（更精致更稀有）",
-    "提示音落下：升级回礼已入袋",
-    "暖光聚焦：升级回礼作为通关印记"
   ],
   scarf: [
     "围炉小站亮灯：冬日围巾悄悄系上",
-    "北风被挡在门外：围巾到位",
-    "暖光从车门涌出：围巾作为通关礼",
-    "雪花落在肩头：围巾刚好接住"
+    "北风被挡在门外：围巾到位"
   ],
   doll: [
-    "车厢尽头出现玩偶座：玲娜贝尓入座",
-    "小铃铛摇响：玲娜贝尔被送上车",
-    "暖灯聚焦：玲娜贝尔成为今晚主角",
-    "列车长微笑点头：玲娜贝尔到站"
+    "车厢尽头出现玩偶座：玲娜贝尔入座",
+    "暖灯聚焦：玲娜贝尔成为今晚主角"
   ],
-  bigGiftCue: [
-    "列车提示：B方向车厢亮起金色灯号",
-    "广播低声提醒：B方向即将开启补给",
-    "车门处出现暖光：B方向似乎更近了",
-    "站台灯牌闪烁：B方向正在呼叫"
+  bracelet: [
+    "随行印记：手链闪着微光落入礼袋",
+    "回礼出现：手链轻轻落下"
+  ],
+  lamp: [
+    "站台灯亮起：回礼车厢开启",
+    "站台灯亮起：暖光照进车厢"
+  ],
+  wish: [
+    "许愿车票已盖章：愿你「{W}」",
+    "车厢广播低声说：愿你「{W}」"
   ]
 };
 
@@ -512,7 +403,7 @@ function shuffle(a){
   }
   return a;
 }
-const DECK = {}, IDX = {};
+const DECK={}, IDX={};
 function initDecks(){
   for(const k of Object.keys(TEXT)){
     DECK[k]=shuffle(TEXT[k]);
@@ -525,109 +416,70 @@ function pick(k){
   IDX[k]=i+1;
   return d[i % d.length];
 }
+function weightedPick(arr){
+  let sum=0;
+  for (const it of arr) sum += it.w;
+  let r = Math.random() * sum;
+  for (const it of arr){
+    r -= it.w;
+    if (r <= 0) return it.key;
+  }
+  return arr[arr.length-1].key;
+}
 
 /* =========================
    状态
 ========================= */
 const S = {
-  pendingType: null,
-  ended: false,
+  ended:false,
 
   commonLeft: CFG.common,
   hiddenLeft: CFG.hidden,
-  scarfLeft: CFG.scarf,
-  dollLeft: CFG.doll,
+  scarfLeft:  CFG.scarf,
+  dollLeft:   CFG.doll,
 
+  // 连续加拆队列（隐藏触发）
   addStreak: 0,
-  ordersInternal: 0,
-  branchPending: false,
 
-  cTotal: CFG.cAddTotal,
-  cUnlocked: 0,
-  cUsed: 0,
-  cBuffForNext: false,
+  // 强制下一单加拆（补给按钮）
+  forceAddNext:false,
 
-  giftUnlockIdx: 0,
-  pendingGifts: [],
+  // 能量条
+  energy: 0,
 
-  stationLight: 0,
-  act: 1,
-
+  // 许愿词
   wishText: "未写入",
-  wishPendingOnce: false,
-
-  forceAddNext: false,
-
-  ticker: ["-","-","-"],
+  wishPendingOnce:false
 };
 
 const $ = (id)=>document.getElementById(id);
-const overlay = $("overlay");
 const toast = $("toast");
-const lamp = $("lamp");
+const lamp  = $("lamp");
 
-/* =========================
-   UI
-========================= */
-function showToast(title,msg,type){
+function showToast(title,msg){
   $("toastTitle").textContent=title;
   $("toastMsg").textContent=msg;
-  const b=$("toastBadge");
-  b.className="badge "+(type||"warn");
-  b.textContent=(type==="good")?"推进":(type==="bad"?"提示":"事件");
   toast.classList.remove("show"); void toast.offsetWidth; toast.classList.add("show");
 }
-function pushTicker(line){
-  S.ticker.unshift(line);
-  S.ticker=S.ticker.slice(0,3);
-  $("t1").textContent=S.ticker[0];
-  $("t2").textContent=S.ticker[1];
-  $("t3").textContent=S.ticker[2];
-}
-function renderPending(){
-  $("pendingType").textContent = S.pendingType ? (S.pendingType==="H" ? "隐藏" : "普通") : "未选择";
-}
-function setActTag(){ $("actTag").textContent = CFG.acts[S.act-1].name; }
-function setWishTag(){ $("wishTag").textContent = S.wishText || "未写入"; }
-
 function showLamp(title, sub){
   $("lampTitle").textContent = title;
   $("lampSub").textContent = sub;
-  lamp.classList.remove("show");
-  void lamp.offsetWidth;
-  lamp.classList.add("show");
-  setTimeout(()=>lamp.classList.remove("show"), 1700);
+  lamp.classList.remove("show"); void lamp.offsetWidth; lamp.classList.add("show");
+  setTimeout(()=>lamp.classList.remove("show"), 1600);
 }
-
-/* =========================
-   终点站
-========================= */
+function renderEnergy(){
+  const pct = (S.energy/CFG.energyMax)*100;
+  $("fill").style.width = `${pct}%`;
+  $("energyText").textContent = `${S.energy} / ${CFG.energyMax}`;
+}
+function setCard(title, body){
+  $("cardTitle").textContent = title;
+  $("cardBody").textContent = body;
+}
 function hardEndShow(){
   S.ended = true;
-  overlay.classList.remove("show");
-  S.branchPending = false;
-  S.pendingType = null;
-  renderPending();
-
-  $("cardTitle").textContent = "终点站广播";
-  $("cardBody").textContent = CFG.finalAnnouncement;
-
-  pushTicker("已到终点站");
-  showToast("终点站", CFG.finalAnnouncement, "good");
-}
-
-/* =========================
-   主线推进
-========================= */
-function updateAct(){
-  const newAct = Math.min(3, 1 + Math.floor(S.ordersInternal / CFG.actStep));
-  if (newAct !== S.act){
-    S.act = newAct;
-    setActTag();
-    const a = CFG.acts[S.act - 1];
-    showToast("主线推进", `${a.name}\n${a.cue}`, "warn");
-    pushTicker(`主线：${a.name}`);
-  }
+  setCard("终点站广播", CFG.finalAnnouncement);
+  showToast("终点站", CFG.finalAnnouncement);
 }
 
 /* =========================
@@ -635,227 +487,185 @@ function updateAct(){
 ========================= */
 function setWish(){
   if (S.ended) return;
-  const v = window.prompt("输入许愿词：", (S.wishText==="未写入"?"平安":S.wishText));
+  const v = window.prompt("输入许愿词（平安/恋爱/发财/回家）：", (S.wishText==="未写入"?"平安":S.wishText));
   if (!v) return;
   S.wishText = v.trim().slice(0,8) || "未写入";
   S.wishPendingOnce = true;
-  setWishTag();
-  // 不展示按键说明，只给一句效果提示
-  showToast("许愿写入", `下一轮会写进故事：${S.wishText}`, "good");
+  showToast("许愿已写入", "下一轮会把许愿写进剧情。");
 }
 
 /* =========================
-   大礼物解锁队列
+   每轮岔路：A/B/C
+   - 每轮都可以点：点一次就 +1 能量
+   - 能量满格时：触发一次站台灯回礼（池里包含：手链/加拆/围巾/玲娜贝尔）
 ========================= */
-function maybeUnlockGifts(){
-  while (S.giftUnlockIdx < CFG.giftUnlockOrders.length &&
-         S.ordersInternal >= CFG.giftUnlockOrders[S.giftUnlockIdx]) {
-    S.pendingGifts.push(CFG.giftSequence[S.giftUnlockIdx]);
-    S.giftUnlockIdx += 1;
-  }
-}
-function awardBigGift(kind, rewards, events){
-  if (kind==="玲娜贝尔"){
-    if (S.dollLeft>0){ S.dollLeft-=1; rewards.push("玲娜贝尔"); events.push(pick("doll")); return; }
-  } else {
-    if (S.scarfLeft>0){ S.scarfLeft-=1; rewards.push("围巾"); events.push(pick("scarf")); return; }
-  }
-  rewards.push("升级回礼");
-  events.push(pick("upgrade"));
-}
-
-/* =========================
-   站台灯揭晓：B 解锁，任意岔路揭晓
-========================= */
-function maybeRevealBigGiftAnyBranch(rewards, events){
-  if (S.stationLight > 0 && S.pendingGifts.length > 0){
-    S.stationLight -= 1;
-
-    const g = S.pendingGifts[0];
-    showLamp("站台灯亮起", `回礼车厢开启\n即将揭晓：${g === "玲娜贝尔" ? "玲娜贝尔" : "围巾"}`);
-
-    events.push("站台灯亮起：回礼车厢开启");
-
-    const real = S.pendingGifts.shift();
-    awardBigGift(real, rewards, events);
-  }
-}
-
-/* =========================
-   岔路
-========================= */
-function maybeTriggerBranch(){
-  if (S.ordersInternal>0 && S.ordersInternal % CFG.branchEvery===0){
-    S.branchPending=true;
-    overlay.classList.add("show");
-    $("choiceTitle").textContent="岔路出现：请选择 A / B / C";
-    showToast("岔路出现", pick("bigGiftCue"), "warn");
-    return true;
-  }
-  return false;
-}
-
 function chooseBranch(letter){
   if (S.ended) return;
-  if (!S.branchPending) return;
 
-  S.branchPending=false;
-  overlay.classList.remove("show");
+  // 事件文案
+  const evt = (letter==="A") ? pick("branchA") : (letter==="B") ? pick("branchB") : pick("branchC");
 
-  const rewards=[], events=[];
-  events.push(letter==="A"?pick("branchA"):letter==="B"?pick("branchB"):pick("branchC"));
+  // 能量推进
+  S.energy = Math.min(CFG.energyMax, S.energy + 1);
+  renderEnergy();
 
-  rewards.push("手链");
+  // 先展示岔路“剧情推进”
+  setCard("岔路结果卡", `触发随机事件：${evt}\n站台灯能量 +1`);
 
-  if (letter==="A"){
-    rewards.push("随行回礼：已到位");
-  }
-  if (letter==="B"){
-    rewards.push("章节推进");
-    S.stationLight += 1;
-    events.push("站牌闪烁：站台灯已解锁");
+  // 如果能量满了：触发站台灯回礼，并把能量清零
+  if (S.energy >= CFG.energyMax){
+    S.energy = 0;
+    renderEnergy();
 
-    if (S.cUnlocked < S.cTotal){
-      S.cUnlocked = Math.min(S.cTotal, S.cUnlocked + CFG.cUnlockPerB);
-      rewards.push("补给权限+1");
-      events.push("提示音落下：补给权限被点亮");
+    // 抽灯池
+    const got = weightedPick(CFG.lampWeights);
+
+    // 舞台灯效果
+    showLamp("站台灯亮起", pick("lamp"));
+
+    // 发放（不承诺中奖，只是推进；库存不足则自动降级为“升级回礼”文案）
+    let giftLine = "";
+    if (got==="bracelet"){
+      giftLine = `获得：手链`;
+    } else if (got==="add"){
+      // 加拆：扣普通壳库存
+      if (S.commonLeft > 0){
+        S.commonLeft -= 1;
+        giftLine = `获得：加拆手机壳`;
+      } else {
+        giftLine = `获得：升级回礼`;
+      }
+    } else if (got==="scarf"){
+      if (S.scarfLeft > 0){
+        S.scarfLeft -= 1;
+        giftLine = `获得：围巾`;
+      } else {
+        giftLine = `获得：升级回礼`;
+      }
+    } else {
+      if (S.dollLeft > 0){
+        S.dollLeft -= 1;
+        giftLine = `获得：玲娜贝尔`;
+      } else {
+        giftLine = `获得：升级回礼`;
+      }
     }
+
+    // 更新卡片（让观众一眼看懂：灯亮=回礼）
+    setTimeout(()=>{
+      setCard("站台灯回礼", `${pick("lamp")}\n${giftLine}`);
+      showToast("站台灯回礼", giftLine);
+    }, 260);
   }
-  if (letter==="C"){
-    S.cBuffForNext = true;
-    events.push("站台广播：下一轮将触发补给");
-  }
-
-  maybeRevealBigGiftAnyBranch(rewards, events);
-
-  const evtLine = `触发随机事件：${events[0] || "…"}`;
-  const rewardLine = `获得：\n- ${rewards.join("\n- ")}`;
-
-  $("cardTitle").textContent = "岔路结果卡";
-  $("cardBody").textContent  = `${evtLine}\n${rewardLine}`;
-
-  pushTicker(`岔路：${letter}`);
-  const toastType = (rewards.includes("围巾") || rewards.includes("玲娜贝尔")) ? "warn" : "good";
-  showToast("岔路播报", `${evtLine}\n${rewardLine}`, toastType);
 }
 
 /* =========================
-   结算一轮（手机版：点击普通/隐藏 -> 直接结算）
+   结算一轮（点普通/隐藏就结算）
+   规则：
+   - 隐藏：当前轮+后两轮 连续加拆（共3轮）
+   - 补给：强制下一轮加拆（仅一次）
+   - 随行回礼（手链）= 33% 概率出现
+   - 如果本轮加拆：获得里不显示手链，也不会出现 “手链 + 加拆”
 ========================= */
-function settleOne(){
+function settleAs(type){ // "common" | "hidden"
   if (S.ended) return;
 
-  if (S.branchPending){
-    showToast("提示","请先完成岔路选择。","bad");
-    return;
-  }
-  if (!S.pendingType){
-    showToast("提示","请先选择普通或隐藏。","bad");
-    return;
-  }
+  // 壳库存不足 => 终点站
   if (S.commonLeft + S.hiddenLeft <= 0){
     hardEndShow();
     return;
   }
 
-  const rewards=[], events=[];
-  rewards.push("手链");
+  const events = [];
+  const rewards = [];
+  let addPaid = false;
 
-  if (S.pendingType==="H"){
-    if (S.hiddenLeft>0){
+  // 1) 扣本轮基础壳
+  if (type==="hidden"){
+    if (S.hiddenLeft > 0){
       S.hiddenLeft -= 1;
+      events.push(pick("hidden"));
+      // ✅ 触发连续3轮加拆
       S.addStreak = Math.max(S.addStreak, CFG.hiddenAddStreak);
-      events.unshift(pick("hidden"));
-      rewards.push("隐藏剧情已点亮");
-    } else {
-      if (S.commonLeft<=0){ hardEndShow(); return; }
+    }else{
+      if (S.commonLeft <= 0){ hardEndShow(); return; }
       S.commonLeft -= 1;
-      events.unshift("系统提示：隐藏已用尽，本次按普通结算");
+      events.push(pick("base"));
     }
-  } else {
-    if (S.commonLeft<=0){ hardEndShow(); return; }
+  }else{
+    if (S.commonLeft <= 0){ hardEndShow(); return; }
     S.commonLeft -= 1;
-    events.unshift(pick("base"));
+    events.push(pick("base"));
   }
 
+  // 2) 许愿词写入：下一轮写一次（不承诺命中）
   if (S.wishPendingOnce && S.wishText && S.wishText!=="未写入"){
     S.wishPendingOnce = false;
-    events.splice(1, 0, `许愿车票已盖章：愿你「${S.wishText}」`);
+    const t = pick("wish").replace("{W}", S.wishText);
+    events.push(t);
   }
 
-  S.ordersInternal += 1;
-  maybeUnlockGifts();
-  updateAct();
-  setActTag();
+  // 3) 随行回礼（手链）= 33% 概率（先记下，后面如果加拆则会被移除）
+  const gotBracelet = (Math.random() < CFG.escortGiftRate);
+  if (gotBracelet){
+    rewards.push("手链");
+    events.push(pick("bracelet"));
+  }
 
-  let addPaid = false;
-  const cAvail = Math.max(0, S.cUnlocked - S.cUsed);
-
-  if (S.forceAddNext && !addPaid){
+  // 4) 兑现加拆优先级：补给强制 > 隐藏连拆
+  // 4.1 补给（强制下一轮一次）
+  if (!addPaid && S.forceAddNext){
     S.forceAddNext = false;
     if (S.commonLeft > 0){
       S.commonLeft -= 1;
       addPaid = true;
       rewards.push("加拆手机壳");
       events.push(pick("add"));
-    } else {
+    }else{
       rewards.push("升级回礼");
-      events.push(pick("upgrade"));
     }
   }
 
+  // 4.2 隐藏连拆
   if (!addPaid && S.addStreak > 0){
     if (S.commonLeft > 0){
       S.commonLeft -= 1;
       addPaid = true;
       rewards.push("加拆手机壳");
       events.push(pick("add"));
-    } else {
+    }else{
       rewards.push("升级回礼");
-      events.push(pick("upgrade"));
     }
     S.addStreak -= 1;
-    S.cBuffForNext = false;
   }
 
-  if (!addPaid && S.cBuffForNext){
-    if (cAvail > 0 && S.commonLeft > 0){
-      S.commonLeft -= 1;
-      S.cUsed += 1;
-      addPaid = true;
-      rewards.push("加拆手机壳");
-      events.push(pick("add"));
-    } else {
-      rewards.push("升级回礼");
-      events.push(pick("upgrade"));
-    }
-    S.cBuffForNext = false;
+  // 5) 如果本轮加拆：获得里去掉手链，且不出现 “手链 + 加拆”
+  let displayRewards = rewards.slice();
+  if (addPaid){
+    displayRewards = displayRewards.filter(x => x !== "手链");
   }
 
-  const evtLine = `触发随机事件：${events[0] || "…"}`;
-  const displayRewards = addPaid ? rewards.filter(r => r !== "手链") : rewards;
-  const rewardLine = `获得：${displayRewards.join(" + ")}`;
-  const addLine = addPaid ? "加拆：已兑现（额外+1壳）" : "";
+  // 6) 输出（只显示第一条事件，避免你说的“/…/…”观感）
+  const evtLine = `触发随机事件：${events[0] || "…"}`
+  const rewardLine = displayRewards.length ? `获得：${displayRewards.join(" + ")}` : "获得：-";
 
-  $("cardTitle").textContent = "结果卡：已结算";
-  $("cardBody").textContent  = addPaid
-    ? `${evtLine}\n${rewardLine}\n${addLine}`
-    : `${evtLine}\n${rewardLine}`;
+  setCard("结果卡", `${evtLine}\n${rewardLine}`);
+  showToast("本轮结算", `${evtLine}\n${rewardLine}`);
 
-  const toastType = (displayRewards.includes("加拆手机壳") || displayRewards.includes("围巾") || displayRewards.includes("玲娜贝尔")) ? "warn" : "good";
-  showToast("本轮播报", addPaid ? `${evtLine}\n${rewardLine}\n${addLine}` : `${evtLine}\n${rewardLine}`, toastType);
-
-  pushTicker(addPaid ? "本轮：加拆已兑现" : "本轮：已结算");
-
-  S.pendingType = null;
-  renderPending();
-
+  // 7) 检查库存耗尽
   if (S.commonLeft + S.hiddenLeft <= 0){
-    hardEndShow();
-    return;
+    setTimeout(hardEndShow, 350);
   }
+}
 
-  maybeTriggerBranch();
+/* =========================
+   补给：强制下一轮加拆
+========================= */
+function setSupply(){
+  if (S.ended) return;
+  S.forceAddNext = true;
+  // 不需要向观众解释机制；这里给你一个很轻的提示，方便你自己知道（你要完全静默也可以删掉这行）
+  showToast("补给已安排", "下一轮会触发加拆。");
 }
 
 /* =========================
@@ -863,82 +673,40 @@ function settleOne(){
 ========================= */
 function resetAll(){
   initDecks();
+  S.ended=false;
 
-  S.pendingType = null;
-  S.ended = false;
+  S.commonLeft=CFG.common;
+  S.hiddenLeft=CFG.hidden;
+  S.scarfLeft=CFG.scarf;
+  S.dollLeft=CFG.doll;
 
-  S.commonLeft = CFG.common;
-  S.hiddenLeft = CFG.hidden;
-  S.scarfLeft  = CFG.scarf;
-  S.dollLeft   = CFG.doll;
+  S.addStreak=0;
+  S.forceAddNext=false;
 
-  S.addStreak = 0;
-  S.ordersInternal = 0;
-  S.branchPending = false;
+  S.energy=0;
+  renderEnergy();
 
-  S.cTotal = CFG.cAddTotal;
-  S.cUnlocked = 0;
-  S.cUsed = 0;
-  S.cBuffForNext = false;
+  S.wishText="未写入";
+  S.wishPendingOnce=false;
 
-  S.giftUnlockIdx = 0;
-  S.pendingGifts = [];
-
-  S.stationLight = 0;
-
-  S.act = 1;
-  setActTag();
-
-  S.wishText = "未写入";
-  S.wishPendingOnce = false;
-  setWishTag();
-
-  S.forceAddNext = false;
-
-  S.ticker = ["-","-","-"];
-  $("t1").textContent="-"; $("t2").textContent="-"; $("t3").textContent="-";
-
-  overlay.classList.remove("show");
-
-  $("cardTitle").textContent = "结果卡：等待结算";
-  $("cardBody").textContent  = "点击「普通」或「隐藏」即可直接结算。";
-
-  renderPending();
-
-  // ✅ 不再输出任何“按键说明”类提示
-  showToast("已重置","", "good");
+  setCard("结果卡", "准备开拆。");
+  showToast("已重置", "可以开始。");
 }
 
 /* =========================
-   绑定（手机版按钮）
+   绑定
 ========================= */
-function settleAs(type){
-  if (S.ended) return;
-  S.pendingType = (type==="H" ? "H" : "O");
-  renderPending();
-  settleOne();
-}
+$("btnCommon").onclick = ()=> settleAs("common");
+$("btnHidden").onclick = ()=> settleAs("hidden");
 
-$("btnCommon").onclick = ()=>settleAs("O");
-$("btnHidden").onclick = ()=>settleAs("H");
-$("btnWish").onclick   = ()=>setWish();
+$("btnA").onclick = ()=> chooseBranch("A");
+$("btnB").onclick = ()=> chooseBranch("B");
+$("btnC").onclick = ()=> chooseBranch("C");
 
-$("btnSupply").onclick = ()=>{
-  if (S.ended) return;
-  S.forceAddNext = true; // 不提示、不暴露
-  // 给你一点点回馈（不含任何按键说明）
-  showToast("补给已准备","下一轮将触发补给事件。","warn");
-};
+$("btnSupply").onclick = ()=> setSupply();
+$("btnWish").onclick   = ()=> setWish();
+$("btnReset").onclick  = ()=> resetAll();
 
-$("btnReset").onclick  = ()=>resetAll();
-
-$("optA").onclick = ()=>chooseBranch("A");
-$("optB").onclick = ()=>chooseBranch("B");
-$("optC").onclick = ()=>chooseBranch("C");
-
-/* =========================
-   启动
-========================= */
 initDecks();
 resetAll();
 </script>
