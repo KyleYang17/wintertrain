@@ -15,10 +15,7 @@
       --shadow: 0 18px 60px rgba(0,0,0,.55);
       --shadow2: 0 10px 26px rgba(0,0,0,.35);
       --radius: 22px;
-      --good:#6be7a8;
-      --warn:#ffd36b;
     }
-
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
@@ -153,8 +150,6 @@
     }
     button:active{transform: scale(.985);}
     button:hover{background: rgba(255,255,255,.10);}
-    .btnGood{border-color: rgba(107,231,168,.35); background: rgba(107,231,168,.12);}
-    .btnWarn{border-color: rgba(255,211,107,.35); background: rgba(255,211,107,.12);}
 
     /* Toast */
     .toast{
@@ -238,7 +233,7 @@
         <div id="cardBody">准备开拆。</div>
 
         <div class="energyWrap">
-          <div class="energyLabel">站台灯能量（满格必出回礼）</div>
+          <div class="energyLabel">站台灯能量（满格额外再送一次回礼）</div>
           <div class="bar"><div class="fill" id="fill"></div></div>
           <div class="energyText" id="energyText">0 / 3</div>
         </div>
@@ -246,8 +241,8 @@
 
       <!-- 点普通/隐藏直接结算 -->
       <div class="panel">
-        <button class="btnGood" id="btnCommon">普通</button>
-        <button class="btnWarn" id="btnHidden">隐藏</button>
+        <button id="btnCommon">普通</button>
+        <button id="btnHidden">隐藏</button>
         <button id="btnWish">许愿</button>
       </div>
 
@@ -285,17 +280,24 @@ const CFG = {
 
   hiddenAddStreak: 3,
 
-  // ✅ 随行回礼（手链）= 33%
-  braceletRate: 0.33,
+  // ✅ 每单回礼里：手链 90%
+  braceletRate: 0.90,
 
-  // ✅ 每轮能量 +1，满3必出回礼
+  // ✅ 能量：每单+1，满3额外再送一次“站台灯回礼”
   energyMax: 3,
 
-  // ✅ 回礼池（除手链外的权重池）
+  // ✅ 非手链的权重池（只在那 10% 里抽）
   giftWeights: [
-    { key:"add",   w:65 },   // 加拆更常见
-    { key:"scarf", w:28 },
-    { key:"doll",  w:7  }
+    { key:"add",   w:70 },  // 加拆更常见
+    { key:"scarf", w:25 },
+    { key:"doll",  w:5  }
+  ],
+
+  // ✅ 站台灯额外回礼池：为了更爽，站台灯不出手链（只出：加拆/围巾/玲娜贝尔）
+  lampWeights: [
+    { key:"add",   w:70 },
+    { key:"scarf", w:25 },
+    { key:"doll",  w:5  }
   ],
 
   finalAnnouncement:
@@ -436,52 +438,63 @@ function setWish(){
   if (!v) return;
   S.wishText = v.trim().slice(0,8) || "未写入";
   S.wishPendingOnce = true;
-  showToast("许愿已写入", "下一轮会把许愿写进剧情。");
+  showToast("许愿已写入", "下一单会把许愿写进剧情。");
 }
 
 /* =========================
-   回礼发放（非保底/保底共用）
-   - 手链优先：先按33%判定手链
-   - 否则从权重池抽：加拆/围巾/玲娜贝尔
+   发放：非手链奖励（加拆/围巾/玲娜贝尔）
 ========================= */
-function rollGift(){
-  // 手链优先
-  if (Math.random() < CFG.braceletRate){
-    return { type:"bracelet", text:"手链", evt: pick("bracelet"), addPaid:false };
-  }
-
-  const k = weightedPick(CFG.giftWeights);
+function rollNonBracelet(weights){
+  const k = weightedPick(weights);
 
   if (k==="add"){
     if (S.commonLeft > 0){
       S.commonLeft -= 1;
-      return { type:"add", text:"加拆手机壳", evt: pick("add"), addPaid:true };
+      return { text:"加拆手机壳", evt: pick("add"), addPaid:true };
     }
-    return { type:"upgrade", text:"升级回礼", evt: pick("lamp"), addPaid:false };
+    return { text:"升级回礼", evt: pick("lamp"), addPaid:false };
   }
 
   if (k==="scarf"){
     if (S.scarfLeft > 0){
       S.scarfLeft -= 1;
-      return { type:"scarf", text:"围巾", evt: pick("scarf"), addPaid:false };
+      return { text:"围巾", evt: pick("scarf"), addPaid:false };
     }
-    return { type:"upgrade", text:"升级回礼", evt: pick("lamp"), addPaid:false };
+    return { text:"升级回礼", evt: pick("lamp"), addPaid:false };
   }
 
   // doll
   if (S.dollLeft > 0){
     S.dollLeft -= 1;
-    return { type:"doll", text:"玲娜贝尔", evt: pick("doll"), addPaid:false };
+    return { text:"玲娜贝尔", evt: pick("doll"), addPaid:false };
   }
-  return { type:"upgrade", text:"升级回礼", evt: pick("lamp"), addPaid:false };
+  return { text:"升级回礼", evt: pick("lamp"), addPaid:false };
+}
+
+/* =========================
+   每单随机回礼（手链90%）
+   - 如果本单出现加拆，则“获得里不显示手链”（你之前要求）
+========================= */
+function rollPerOrderGift(){
+  // 90% 手链
+  if (Math.random() < CFG.braceletRate){
+    return { text:"手链", evt: pick("bracelet"), addPaid:false };
+  }
+  // 10% 抽非手链（加拆/围巾/玲娜贝尔）
+  return rollNonBracelet(CFG.giftWeights);
+}
+
+/* =========================
+   补给：强制下一单加拆
+========================= */
+function setSupply(){
+  if (S.ended) return;
+  S.forceAddNext = true;
+  showToast("补给已安排", "下一单会触发加拆。");
 }
 
 /* =========================
    结算（点普通/隐藏直接结算）
-   - 每轮能量+1
-   - 能量满格：必出回礼（保底），能量清零
-   - 补给：强制下一轮加拆（不靠概率）
-   - 隐藏：触发三连加拆（你手动点隐藏才会触发）
 ========================= */
 function settleAs(type){
   if (S.ended) return;
@@ -512,13 +525,13 @@ function settleAs(type){
     events.push(pick("base"));
   }
 
-  // 许愿写入（下一轮写一次）
+  // 许愿写入（下一单写一次）
   if (S.wishPendingOnce && S.wishText && S.wishText!=="未写入"){
     S.wishPendingOnce = false;
     events.push(pick("wish").replace("{W}", S.wishText));
   }
 
-  // ✅ 先处理强制补给（下一轮加拆）—你点了补给就必出
+  // ① 补给强制加拆（隐形，但结果会显示加拆）
   if (S.forceAddNext){
     S.forceAddNext = false;
     if (S.commonLeft > 0){
@@ -532,7 +545,7 @@ function settleAs(type){
     }
   }
 
-  // ✅ 隐藏三连加拆
+  // ② 隐藏三连加拆
   if (!addPaid && S.addStreak > 0){
     if (S.commonLeft > 0){
       S.commonLeft -= 1;
@@ -546,56 +559,47 @@ function settleAs(type){
     S.addStreak -= 1;
   }
 
-  // ✅ 能量推进
-  S.energy = Math.min(CFG.energyMax, S.energy + 1);
-  renderEnergy();
-
-  // ✅ 本轮随机回礼（可选）：如果你想“每轮都有概率出回礼”，打开下面这一段
-  // 这里设置成：如果本轮还没出加拆，则有一定概率出回礼（手链优先）
-  // 你如果想更强刺激，把 0.45 改大，比如 0.6
-  let giftThisRound = null;
-  if (!addPaid && Math.random() < 0.45){
-    giftThisRound = rollGift();
-    rewards.push(giftThisRound.text);
-    events.push(giftThisRound.evt);
-    if (giftThisRound.addPaid) addPaid = true;
-  }
-
-  // ✅ 保底：能量满格必出回礼（站台灯亮起）
-  if (S.energy >= CFG.energyMax){
-    S.energy = 0;
-    renderEnergy();
-    showLamp("站台灯亮起", pick("lamp"));
-
-    const g = rollGift();
+  // ③ 每单必有随机回礼（手链90%）
+  if (!addPaid){
+    const g = rollPerOrderGift();
     rewards.push(g.text);
     events.push(g.evt);
     if (g.addPaid) addPaid = true;
+  } else {
+    // 已经加拆了 -> 不再追加手链（避免“手链+加拆”）
   }
 
-  // 展示：如果加拆出现，获得里不显示“手链 + 加拆”
+  // ④ 能量推进：每单 +1，满格“额外再送一次站台灯回礼”
+  S.energy = Math.min(CFG.energyMax, S.energy + 1);
+  renderEnergy();
+
+  if (S.energy >= CFG.energyMax){
+    S.energy = 0;
+    renderEnergy();
+
+    showLamp("站台灯亮起", pick("lamp"));
+
+    // 站台灯额外回礼：不出手链（更像大奖）
+    const extra = rollNonBracelet(CFG.lampWeights);
+    rewards.push(extra.text);
+    events.push(extra.evt);
+    if (extra.addPaid) addPaid = true;
+  }
+
+  // 展示：加拆出现时，获得里去掉手链（你之前要求）
   const displayRewards = addPaid ? rewards.filter(x => x !== "手链") : rewards;
 
   const evtLine = `触发随机事件：${events[0] || "…"}`;
-  const rewardLine = displayRewards.length ? `获得：${displayRewards.join(" + ")}` : "获得：-";
+  const rewardLine = `获得：${displayRewards.join(" + ")}`;
+  const addLine = addPaid ? "加拆：已兑现（额外+1壳）" : "";
 
-  setCard("结果卡", `${evtLine}\n${rewardLine}`);
-  showToast("本轮结算", `${evtLine}\n${rewardLine}`);
+  setCard("结果卡", addPaid ? `${evtLine}\n${rewardLine}\n${addLine}` : `${evtLine}\n${rewardLine}`);
+  showToast("本轮结算", addPaid ? `${evtLine}\n${rewardLine}\n${addLine}` : `${evtLine}\n${rewardLine}`);
 
   // 终点站
   if (S.commonLeft + S.hiddenLeft <= 0){
     setTimeout(hardEndShow, 350);
-    return;
   }
-}
-
-/* =========================
-   补给：强制下一轮加拆
-========================= */
-function setSupply(){
-  if (S.ended) return;
-  S.forceAddNext = true;
-  showToast("补给已安排", "下一轮会触发加拆。");
 }
 
 /* =========================
