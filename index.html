@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
-  <title>冬日列车</title>
+  <title>冬日列车 · 手机版</title>
 
   <style>
     :root{
@@ -53,15 +53,8 @@
       filter: blur(.2px);
       animation: snowFall 20s linear infinite;
     }
-    .snow:before{
-      opacity:.14; background-size: 640px 640px;
-      animation-duration: 28s; transform: translateY(-140px);
-    }
-    .snow:after{
-      opacity:.10; background-size: 820px 820px;
-      animation-duration: 36s; transform: translateY(-240px);
-      filter: blur(.6px);
-    }
+    .snow:before{ opacity:.14; background-size: 640px 640px; animation-duration: 28s; transform: translateY(-140px); }
+    .snow:after{ opacity:.10; background-size: 820px 820px; animation-duration: 36s; transform: translateY(-240px); filter: blur(.6px); }
     @keyframes snowFall{0%{transform: translateY(-260px)}100%{transform: translateY(980px)}}
 
     .wrap{height:100%; display:flex; flex-direction:column; padding:14px;}
@@ -119,10 +112,7 @@
       gap:12px;
       flex-wrap:wrap;
     }
-    .energyLabel{
-      font-size:13px;
-      color: var(--mut);
-    }
+    .energyLabel{ font-size:13px; color: var(--mut); }
     .bar{
       flex:1;
       min-width: 160px;
@@ -140,11 +130,7 @@
       background: linear-gradient(90deg, rgba(255,211,107,.55), rgba(96,122,255,.45), rgba(107,231,168,.35));
       transition: width .18s ease;
     }
-    .energyText{
-      font-size:13px;
-      color: rgba(238,240,255,.86);
-      white-space:nowrap;
-    }
+    .energyText{ font-size:13px; color: rgba(238,240,255,.86); white-space:nowrap; }
 
     /* 底部按钮区 */
     .panel{
@@ -252,6 +238,33 @@
       line-height:1.55;
       white-space:pre-line;
     }
+
+    /* ✅ 岔路全屏弹层（不自动消失，必须选A/B/C） */
+    .branchLayer{
+      position:fixed; inset:0;
+      display:none;
+      align-items:center; justify-content:center;
+      z-index:11000;
+      background:
+        radial-gradient(900px 520px at 50% 35%, rgba(96,122,255,.22) 0%, rgba(0,0,0,0) 60%),
+        rgba(0,0,0,.62);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding:14px;
+    }
+    .branchLayer.show{display:flex;}
+    .branchBtns{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:10px;
+    }
+    .branchHint{
+      margin-top:10px;
+      font-size:14px;
+      color: rgba(238,240,255,.88);
+      line-height:1.55;
+    }
   </style>
 </head>
 
@@ -271,21 +284,20 @@
         </div>
       </div>
 
-      <!-- 结算：普通/隐藏（点了直接结算） -->
+      <!-- 结算：点普通/隐藏直接结算 -->
       <div class="panel" style="margin-top:14px;">
         <button class="btnGood" id="btnCommon">普通</button>
         <button class="btnWarn" id="btnHidden">隐藏</button>
         <button class="btnSoft" id="btnWish">许愿</button>
       </div>
 
-      <!-- 每轮岔路：A/B/C（每轮都可以点） -->
+      <!-- 这排保留（你也可以不用，主要用弹层） -->
       <div class="panel2">
         <button class="btnSoft" id="btnA">A</button>
         <button class="btnSoft" id="btnB">B</button>
         <button class="btnSoft" id="btnC">C</button>
       </div>
 
-      <!-- 补给：强制下一轮加拆（不向观众解释机制） -->
       <div class="panel2">
         <button class="btnSoft" id="btnSupply">补给</button>
         <button class="btnSoft" id="btnReset">重置</button>
@@ -308,9 +320,23 @@
     </div>
   </div>
 
+  <!-- ✅ 岔路全屏弹出 -->
+  <div class="branchLayer" id="branchLayer">
+    <div class="lampCard">
+      <div class="lampTitle">岔路出现</div>
+      <div class="lampSub">请弹幕投票：A / B / C</div>
+      <div class="branchHint">你选中最多票的路线后，会推进能量条并触发事件。</div>
+      <div class="branchBtns">
+        <button class="btnSoft" id="bA">A</button>
+        <button class="btnSoft" id="bB">B</button>
+        <button class="btnSoft" id="bC">C</button>
+      </div>
+    </div>
+  </div>
+
 <script>
 /* =========================
-   配置（按你库存）
+   配置
 ========================= */
 const CFG = {
   common: 519,
@@ -318,17 +344,15 @@ const CFG = {
   scarf: 12,
   doll: 3,
 
-  // ✅ 隐藏触发：连续3单加拆（当前+后两单）
   hiddenAddStreak: 3,
 
-  // ✅ 随行回礼（手链）概率 = 33%
+  // ✅ 手链（随行回礼）= 33%
   escortGiftRate: 0.33,
 
-  // ✅ 能量条：满 3 触发站台灯回礼
+  // ✅ 能量条 3 格
   energyMax: 3,
 
-  // ✅ 站台灯回礼池权重（不承诺中奖，只是剧情推进）
-  // 手链优先，其次加拆，然后围巾/玲娜贝尔
+  // ✅ 站台灯回礼池：手链优先，其次加拆，然后围巾/玲娜贝尔
   lampWeights: [
     { key:"bracelet", w:70 },
     { key:"add",      w:20 },
@@ -343,7 +367,7 @@ const CFG = {
 };
 
 /* =========================
-   文案池（精简：不再出现 / … / …）
+   文案池（精简，不出现 /…/…）
 ========================= */
 const TEXT = {
   base: [
@@ -438,23 +462,22 @@ const S = {
   scarfLeft:  CFG.scarf,
   dollLeft:   CFG.doll,
 
-  // 连续加拆队列（隐藏触发）
   addStreak: 0,
-
-  // 强制下一单加拆（补给按钮）
   forceAddNext:false,
 
-  // 能量条
   energy: 0,
 
-  // 许愿词
   wishText: "未写入",
-  wishPendingOnce:false
+  wishPendingOnce:false,
+
+  // ✅ 岔路弹层锁定：没选A/B/C不能结算下一单
+  branchPending:false
 };
 
 const $ = (id)=>document.getElementById(id);
 const toast = $("toast");
 const lamp  = $("lamp");
+const branchLayer = $("branchLayer");
 
 function showToast(title,msg){
   $("toastTitle").textContent=title;
@@ -478,8 +501,23 @@ function setCard(title, body){
 }
 function hardEndShow(){
   S.ended = true;
+  S.branchPending = false;
+  branchLayer.classList.remove("show");
   setCard("终点站广播", CFG.finalAnnouncement);
   showToast("终点站", CFG.finalAnnouncement);
+}
+
+/* =========================
+   ✅ 岔路弹层控制
+========================= */
+function showBranch(){
+  if (S.ended) return;
+  S.branchPending = true;
+  branchLayer.classList.add("show");
+}
+function hideBranch(){
+  S.branchPending = false;
+  branchLayer.classList.remove("show");
 }
 
 /* =========================
@@ -495,40 +533,37 @@ function setWish(){
 }
 
 /* =========================
-   每轮岔路：A/B/C
-   - 每轮都可以点：点一次就 +1 能量
-   - 能量满格时：触发一次站台灯回礼（池里包含：手链/加拆/围巾/玲娜贝尔）
+   岔路选择：A/B/C
+   - 推进能量 +1
+   - 满格触发站台灯回礼（池：手链/加拆/围巾/玲娜贝尔）
 ========================= */
 function chooseBranch(letter){
   if (S.ended) return;
 
-  // 事件文案
   const evt = (letter==="A") ? pick("branchA") : (letter==="B") ? pick("branchB") : pick("branchC");
 
   // 能量推进
   S.energy = Math.min(CFG.energyMax, S.energy + 1);
   renderEnergy();
 
-  // 先展示岔路“剧情推进”
   setCard("岔路结果卡", `触发随机事件：${evt}\n站台灯能量 +1`);
+  showToast("岔路选择", `路线 ${letter} 已确认`);
 
-  // 如果能量满了：触发站台灯回礼，并把能量清零
+  // 选完关闭弹层
+  hideBranch();
+
+  // 满格触发灯
   if (S.energy >= CFG.energyMax){
     S.energy = 0;
     renderEnergy();
 
-    // 抽灯池
     const got = weightedPick(CFG.lampWeights);
-
-    // 舞台灯效果
     showLamp("站台灯亮起", pick("lamp"));
 
-    // 发放（不承诺中奖，只是推进；库存不足则自动降级为“升级回礼”文案）
     let giftLine = "";
     if (got==="bracelet"){
       giftLine = `获得：手链`;
     } else if (got==="add"){
-      // 加拆：扣普通壳库存
       if (S.commonLeft > 0){
         S.commonLeft -= 1;
         giftLine = `获得：加拆手机壳`;
@@ -551,7 +586,6 @@ function chooseBranch(letter){
       }
     }
 
-    // 更新卡片（让观众一眼看懂：灯亮=回礼）
     setTimeout(()=>{
       setCard("站台灯回礼", `${pick("lamp")}\n${giftLine}`);
       showToast("站台灯回礼", giftLine);
@@ -560,17 +594,21 @@ function chooseBranch(letter){
 }
 
 /* =========================
-   结算一轮（点普通/隐藏就结算）
-   规则：
-   - 隐藏：当前轮+后两轮 连续加拆（共3轮）
-   - 补给：强制下一轮加拆（仅一次）
-   - 随行回礼（手链）= 33% 概率出现
-   - 如果本轮加拆：获得里不显示手链，也不会出现 “手链 + 加拆”
+   结算一轮（点普通/隐藏直接结算）
+   - ✅ 结算后：自动全屏弹出“岔路出现”
+   - ✅ 没选岔路：不能结算下一单
+   - 手链（随行回礼）= 33%
+   - 本轮加拆：获得里不显示手链，不出现“手链 + 加拆”
 ========================= */
-function settleAs(type){ // "common" | "hidden"
+function settleAs(type){
   if (S.ended) return;
 
-  // 壳库存不足 => 终点站
+  // ✅ 如果岔路还没选，先选岔路
+  if (S.branchPending){
+    showToast("请先选岔路", "让弹幕投票后点 A/B/C。");
+    return;
+  }
+
   if (S.commonLeft + S.hiddenLeft <= 0){
     hardEndShow();
     return;
@@ -580,12 +618,11 @@ function settleAs(type){ // "common" | "hidden"
   const rewards = [];
   let addPaid = false;
 
-  // 1) 扣本轮基础壳
+  // 扣基础壳
   if (type==="hidden"){
     if (S.hiddenLeft > 0){
       S.hiddenLeft -= 1;
       events.push(pick("hidden"));
-      // ✅ 触发连续3轮加拆
       S.addStreak = Math.max(S.addStreak, CFG.hiddenAddStreak);
     }else{
       if (S.commonLeft <= 0){ hardEndShow(); return; }
@@ -598,22 +635,21 @@ function settleAs(type){ // "common" | "hidden"
     events.push(pick("base"));
   }
 
-  // 2) 许愿词写入：下一轮写一次（不承诺命中）
+  // 许愿写入（下一轮写一次，不承诺命中）
   if (S.wishPendingOnce && S.wishText && S.wishText!=="未写入"){
     S.wishPendingOnce = false;
     const t = pick("wish").replace("{W}", S.wishText);
     events.push(t);
   }
 
-  // 3) 随行回礼（手链）= 33% 概率（先记下，后面如果加拆则会被移除）
+  // ✅ 手链 33% 概率
   const gotBracelet = (Math.random() < CFG.escortGiftRate);
   if (gotBracelet){
     rewards.push("手链");
     events.push(pick("bracelet"));
   }
 
-  // 4) 兑现加拆优先级：补给强制 > 隐藏连拆
-  // 4.1 补给（强制下一轮一次）
+  // 兑现加拆优先级：补给强制 > 隐藏连拆
   if (!addPaid && S.forceAddNext){
     S.forceAddNext = false;
     if (S.commonLeft > 0){
@@ -621,50 +657,51 @@ function settleAs(type){ // "common" | "hidden"
       addPaid = true;
       rewards.push("加拆手机壳");
       events.push(pick("add"));
-    }else{
+    } else {
       rewards.push("升级回礼");
     }
   }
 
-  // 4.2 隐藏连拆
   if (!addPaid && S.addStreak > 0){
     if (S.commonLeft > 0){
       S.commonLeft -= 1;
       addPaid = true;
       rewards.push("加拆手机壳");
       events.push(pick("add"));
-    }else{
+    } else {
       rewards.push("升级回礼");
     }
     S.addStreak -= 1;
   }
 
-  // 5) 如果本轮加拆：获得里去掉手链，且不出现 “手链 + 加拆”
+  // 本轮加拆：获得里去掉手链
   let displayRewards = rewards.slice();
   if (addPaid){
     displayRewards = displayRewards.filter(x => x !== "手链");
   }
 
-  // 6) 输出（只显示第一条事件，避免你说的“/…/…”观感）
-  const evtLine = `触发随机事件：${events[0] || "…"}`
+  const evtLine = `触发随机事件：${events[0] || "…"}`;
   const rewardLine = displayRewards.length ? `获得：${displayRewards.join(" + ")}` : "获得：-";
 
   setCard("结果卡", `${evtLine}\n${rewardLine}`);
   showToast("本轮结算", `${evtLine}\n${rewardLine}`);
 
-  // 7) 检查库存耗尽
+  // 库存耗尽 -> 终点站
   if (S.commonLeft + S.hiddenLeft <= 0){
     setTimeout(hardEndShow, 350);
+    return;
   }
+
+  // ✅ 结算完立刻弹出岔路（必须选）
+  setTimeout(showBranch, 180);
 }
 
 /* =========================
-   补给：强制下一轮加拆
+   补给：强制下一轮加拆（不向观众展示开关）
 ========================= */
 function setSupply(){
   if (S.ended) return;
   S.forceAddNext = true;
-  // 不需要向观众解释机制；这里给你一个很轻的提示，方便你自己知道（你要完全静默也可以删掉这行）
   showToast("补给已安排", "下一轮会触发加拆。");
 }
 
@@ -689,6 +726,9 @@ function resetAll(){
   S.wishText="未写入";
   S.wishPendingOnce=false;
 
+  S.branchPending=false;
+  branchLayer.classList.remove("show");
+
   setCard("结果卡", "准备开拆。");
   showToast("已重置", "可以开始。");
 }
@@ -702,6 +742,10 @@ $("btnHidden").onclick = ()=> settleAs("hidden");
 $("btnA").onclick = ()=> chooseBranch("A");
 $("btnB").onclick = ()=> chooseBranch("B");
 $("btnC").onclick = ()=> chooseBranch("C");
+
+$("bA").onclick = ()=> chooseBranch("A");
+$("bB").onclick = ()=> chooseBranch("B");
+$("bC").onclick = ()=> chooseBranch("C");
 
 $("btnSupply").onclick = ()=> setSupply();
 $("btnWish").onclick   = ()=> setWish();
